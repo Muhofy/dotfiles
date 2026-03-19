@@ -1,0 +1,117 @@
+#!/data/data/com.termux/files/usr/bin/bash
+# ╔════════════════════════════════════════════════════════╗
+# ║  dev — Tmux Session Manager                           ║
+# ║  Kullanım: dev [proje-adı]                            ║
+# ╚════════════════════════════════════════════════════════╝
+
+PROJECTS_DIR="$HOME/projects"
+
+# ── Proje listele ─────────────────────────────────────────
+list_projects() {
+  echo ""
+  echo "  📁 Projeler:"
+  echo "  ─────────────────────"
+  ls -1 "$PROJECTS_DIR" 2>/dev/null | while read -r p; do
+    local branch=""
+    [ -d "$PROJECTS_DIR/$p/.git" ] && \
+      branch=" $(git -C "$PROJECTS_DIR/$p" branch --show-current 2>/dev/null)"
+    echo "  • $p${branch:+ \033[0;35m$branch\033[0m}"
+  done
+  echo ""
+}
+
+# ── Session aç ───────────────────────────────────────────
+open_session() {
+  local name="$1"
+  local dir=""
+
+  # Tam yol mu yoksa proje adı mı?
+  if [ -d "$name" ]; then
+    dir="$name"
+    name=$(basename "$name")
+  elif [ -d "$PROJECTS_DIR/$name" ]; then
+    dir="$PROJECTS_DIR/$name"
+  else
+    echo "✗ Proje bulunamadı: $name"
+    echo "  Yeni oluşturulsun mu? (y/n)"
+    read -r answer </dev/tty
+    if [ "$answer" = "y" ]; then
+      mkdir -p "$PROJECTS_DIR/$name"
+      dir="$PROJECTS_DIR/$name"
+      echo "✔ Oluşturuldu: $dir"
+    else
+      return 1
+    fi
+  fi
+
+  # Session zaten açık mı?
+  if tmux has-session -t "$name" 2>/dev/null; then
+    echo "  ↩ Session zaten açık: $name"
+    tmux attach -t "$name"
+    return
+  fi
+
+  echo "  🚀 Açılıyor: $name"
+
+  # Session oluştur
+  tmux new-session -d -s "$name" -c "$dir"
+
+  # ── Layout ───────────────────────────────────────────
+  # Pencere 1: kod (nvim)
+  tmux rename-window -t "$name:1" "kod"
+  tmux send-keys -t "$name:1" "nvim ." Enter
+
+  # Pencere 2: terminal
+  tmux new-window -t "$name" -c "$dir" -n "terminal"
+
+  # Pencere 3: git
+  tmux new-window -t "$name" -c "$dir" -n "git"
+  tmux send-keys -t "$name:git" "git log --oneline --graph --all | head -30" Enter
+
+  # İlk pencereye dön
+  tmux select-window -t "$name:kod"
+
+  # Attach
+  tmux attach -t "$name"
+}
+
+# ── Session sil ──────────────────────────────────────────
+kill_session() {
+  local name="$1"
+  tmux has-session -t "$name" 2>/dev/null || { echo "✗ Session yok: $name"; return 1; }
+  tmux kill-session -t "$name" && echo "✔ Silindi: $name"
+}
+
+# ── Aktif sessionları listele ─────────────────────────────
+list_sessions() {
+  echo ""
+  echo "  🖥  Aktif Sessionlar:"
+  echo "  ─────────────────────"
+  tmux list-sessions 2>/dev/null | while read -r line; do
+    echo "  • $line"
+  done || echo "  Açık session yok."
+  echo ""
+}
+
+# ── Ana Menü ─────────────────────────────────────────────
+case "$1" in
+  "")
+    # Argüman yoksa fzf ile seç
+    if command -v fzf &>/dev/null; then
+      selected=$(ls -1 "$PROJECTS_DIR" 2>/dev/null | fzf \
+        --prompt="  Proje: " \
+        --preview "eza --tree --icons --color=always $PROJECTS_DIR/{} | head -20" \
+        --border=rounded \
+        --height=50%)
+      [ -n "$selected" ] && open_session "$selected"
+    else
+      list_projects
+      echo -n "  Proje adı: "
+      read -r name </dev/tty
+      [ -n "$name" ] && open_session "$name"
+    fi
+    ;;
+  "ls"|"list")   list_projects; list_sessions ;;
+  "kill"|"rm")   kill_session "$2" ;;
+  *)             open_session "$1" ;;
+esac

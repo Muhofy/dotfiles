@@ -1,0 +1,178 @@
+# ╔════════════════════════════════════════════════════════╗
+# ║  starship.toml — Muhofy Edition (Minimal Gruvbox)     ║
+# ╚════════════════════════════════════════════════════════╝
+
+palette = "gruvbox_dark"
+
+[palettes.gruvbox_dark]
+fg     = "#ebdbb2"
+gray   = "#928374"
+yellow = "#fabd2f"
+blue   = "#83a598"
+purple = "#d3869b"
+green  = "#b8bb26"
+red    = "#fb4934"
+aqua   = "#8ec07c"
+
+format = """
+$username\
+$hostname\
+$directory\
+$git_branch\
+$java\
+$line_break\
+$character"""
+
+[username]
+disabled    = false
+show_always = true
+format      = "[$user]($style)"
+style_user  = "fg:yellow bold"
+style_root  = "fg:red bold"
+
+[hostname]
+disabled  = false
+ssh_only  = false
+format    = "[@$hostname]($style) "
+style     = "fg:gray"
+trim_at   = "."
+
+[directory]
+format            = "[$path]($style) "
+style             = "fg:blue bold"
+truncation_length = 4
+truncate_to_repo  = false
+home_symbol       = "~"
+use_logical_path  = true
+
+[git_branch]
+format = "[$branch]($style) "
+style  = "fg:purple bold"
+symbol = ""
+
+[java]
+format       = "[$symbol]($style)"
+symbol       = "☕ "
+style        = "fg:yellow"
+detect_files = ["pom.xml", "build.gradle", "*.java", ".java-version"]
+
+[git_status]
+disabled = true
+
+[git_metrics]
+disabled = true
+
+[cmd_duration]
+disabled = true
+
+[nodejs]
+disabled = true
+
+[python]
+disabled = true
+
+[rust]
+disabled = true
+
+[golang]
+disabled = true
+
+[gradle]
+disabled = true
+
+[kotlin]
+disabled = true
+
+[package]
+disabled = true
+
+[helm]
+disabled = true
+
+[docker_context]
+disabled = true
+
+[terraform]
+disabled = true
+
+[ruby]
+disabled = true
+
+[swift]
+disabled = true
+
+[dart]
+disabled = true
+
+[lua]
+disabled = true
+
+[php]
+disabled = true
+
+[elixir]
+disabled = true
+
+[erlang]
+disabled = true
+
+[dotnet]
+disabled = true
+
+[conda]
+disabled = true
+
+[buf]
+disabled = true
+
+[cmake]
+disabled = true
+
+[cobol]
+disabled = true
+
+[crystal]
+disabled = true
+
+[deno]
+disabled = true
+
+[elm]
+disabled = true
+
+[haskell]
+disabled = true
+
+[nim]
+disabled = true
+
+[ocaml]
+disabled = true
+
+[perl]
+disabled = true
+
+[pulumi]
+disabled = true
+
+[purescript]
+disabled = true
+
+[rlang]
+disabled = true
+
+[red]
+disabled = true
+
+[scala]
+disabled = true
+
+[vlang]
+disabled = true
+
+[zig]
+disabled = true
+
+[character]
+success_symbol = "[❯](fg:green bold)"
+error_symbol   = "[❯](fg:red bold)"
